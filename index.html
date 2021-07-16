@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta charset="UTF-8">
+   <meta name="mobile-web-app-capable" content="yes">
+   <title>Mathematical Expression Evaluator 4</title>
+   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.css">
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.js" type="text/javascript"></script>
+   <script src="https://unpkg.com/mathjs/lib/browser/math.js"></script>
+   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+   <link rel="stylesheet" href="mathquill.css"/>
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+   <script src="mathquill.js"></script>
+   <script>
+   var MQ = MathQuill.getInterface(2);
+   </script>
+   <style type="text/css">
+   .container {
+       float:  right;
+       position: relative;
+       right: 10px;
+       top:  0px;
+    }
+
+    .MathJax, .MathJax_Display  {
+        text-align: left !important;
+        font-size: 100%  !important;
+    }
+
+   </style>
+<title>Graphing Tool 7</title>
+<body>
+<div id="form">
+  <h1>Mathematical Expression Evaluator</h1>
+  <form>
+    <input type="checkbox" id="mathequal" name="mathequal" value="equal" onclick="checkBox()">
+    <label for="mathequal">Mathematically Equal</label><br>
+    <input type="checkbox" id="intform" name="intform" value="int" onclick="checkBox()">
+    <label for="intform">Integer Form</label><br>
+    <input type="checkbox" id="fracform" name="fracform" value="fraction" onclick="checkBox()">
+    <label for="fracform">Fraction Form</label><br>
+    <input type="checkbox" id="issimplified" name="issimplified" value="simple" onclick="checkBox()">
+    <label for="issimplified">Simplified Form</label><br>
+    <input type="checkbox" id="expform" name="expform" value="expanded" onclick="checkBox()">
+    <label for="expform">Expanded Form</label><br>
+    <input type="checkbox" id="mixnum" name="mixnum" value="mixed" onclick="checkBox()">
+    <label for="mixnum">Mixed Number</label><br><br>
+  </form>
+</div>
+<div id="evaluator" style="display:block;">
+  <h1>Input Field</h1>
+  <p id="choosen"></p>
+  Student Input: <input type="text" id="studentexpression" oninput="display();">
+  Correct Answer: <input type="text" id="correctexpression" oninput="display();"><br>
+  <p id="result"></p><br>
+  <button onclick="checker()">Validate</button>
+</div>
+
+<div id="container">
+  <p id="studentresult"></p>
+  <p id="correctresult"></p>
+</div>
+
+<script type="text/javascript">
+  var mathSymbols = ["+", "-", "*", "/", "^", "**"];
+  var mathequal;
+  var integer;
+  var fraction;
+  var simplified;
+  var expanded;
+  var mixed;
+  var checked=[];
+
+  function typeset(code) {
+    MathJax.startup.promise = MathJax.startup.promise
+      .then(() => MathJax.typesetPromise(code()))
+      .catch((err) => console.log('Typeset failed: ' + err.message));
+    return MathJax.startup.promise;
+  }
+  
+  function checkBox() {
+    checked = [];
+    var message;
+    var flag = false;
+    mathequal = document.getElementById("mathequal");
+    checked.push(mathequal.checked);
+    integer = document.getElementById("intform");
+    checked.push(integer.checked);
+    fraction = document.getElementById("fracform");
+    checked.push(fraction.checked);
+    simplified = document.getElementById("issimplified");
+    checked.push(simplified.checked);
+    expanded = document.getElementById("expform");
+    checked.push(expanded.checked);
+    mixed = document.getElementById("mixnum");
+    checked.push(mixed.checked);
+    var string = "You have chosen: ";
+    if (mathequal.checked) {
+      string += "Mathematically Equal, ";
+    }
+    if (integer.checked) {
+      string += "Integer Form, ";
+    }
+    if (fraction.checked) {
+      string += "Fraction Form, ";
+    }
+    if (simplified.checked) {
+      string += "Simplified Form, ";
+    }
+    if (expanded.checked) {
+      string += "Expanded Form, ";
+    }
+    if (mixed.checked) {
+      string += "Mixed Form, ";
+    }
+    string = string.substr(0, string.length - 2) + ".";
+    var n = string.lastIndexOf(",");
+    var count = 0;
+    for (var x = 0; x < string.length; x++) {
+      if (string.charAt(x) == ",") {
+        count += 1;
+      }
+    }
+    if (count >= 1) {
+      string = string.substr(0, n) + " and" + string.substr(n + 1, string.length);
+    }
+    document.getElementById("choosen").innerHTML = string;
+    document.getElementById("evaluator").style.display = 'block';
+    document.getElementById("correctexpression").value = "";
+    document.getElementById("studentexpression").value = "";
+    document.getElementById("result").innerHTML = "";
+    document.getElementById("studentresult").innerHTML = "";
+    document.getElementById("correctresult").innerHTML = "";
+  }
+
+  function mathematicallyEqual(studentInput, correctInput) {
+    studentInput = space(studentInput, checked[5]);
+    correctInput = space(correctInput, checked[5]);
+    studentInput = studentInput.replace(/\s/g,"");
+    studentInput = studentInput.replace("^","**");
+    while (studentInput.includes("_")) {
+      studentInput = studentInput.replace("_", "+");
+    }
+    studentInput = eval(studentInput);
+    correctInput = eval(correctInput);
+    studentInput = studentInput.toFixed(5);
+    correctInput = correctInput.toFixed(5);
+    return (studentInput == correctInput);
+  }
+
+  function integerEqual(studentInput, correctInput) {
+    studentInput = space(studentInput);
+    correctInput = space(correctInput);
+    if (!Number.isInteger(correctInput)) {
+      alert("The correct answer has to be an integer");
+      document.getElementById("correctexpression").value = "";
+      document.getElementById("studentexpression").value = "";
+      document.getElementById("result").innerHTML = "";
+      document.getElementById("studentresult").innerHTML = "";
+      document.getElementById("correctresult").innerHTML = "";
+      return;
+    }
+    return (studentInput == correctInput);
+  }
+
+  function fractionForm(student, correct) {
+    student = space(student);
+    correct = space(correct);
+    for (var i = 0; i < mathSymbols.length; i++) {
+      if (student.includes(mathSymbols[i])) {
+        if (mathSymbols[i] != "/") {
+          if (mathSymbols[i] == "-") {
+            return negative(student);
+          }
+          return false;
+        }
+      }
+    }
+    student = eval(student);
+    correct = eval(correct);
+    return (student==correct);
+  }
+
+  function isSimplified(student, correct) {
+    student = space(student);
+    correct = space(correct);
+    student = parseInt(student);
+    correct = parseInt(correct);
+    return (student==correct);
+  }
+
+  function mixedForm(student, correct) {
+    student = space(student, true);
+    correct = space(correct, true);
+    student = student.replace(/\s/g,"");
+    student = student.replace("^","**");
+    while (student.includes("_")) {
+      student = student.replace("_", "+");
+    }
+    student = eval(student);
+    correct = eval(correct);
+    student = student.toFixed(5);
+    correct = correct.toFixed(5);
+    return (student==correct);
+  }
+
+  function negative(x) {
+    var negativeIndex = x.indexOf("-");
+    for (var i = negativeIndex + 1; i < x.length; i++) {
+      if (x[i] in mathSymbols) {
+        if (!(x[i] == "/")) {
+          return true;
+        }
+        return false;
+      }
+    }
+    return false;  
+  }
+
+  function space(expression, mixed=false) {
+    var parts = expression.split(" ");
+    expression = "";
+    for (var i = 0; i < parts.length - 1; i++) {
+      var num1 = parts[i];
+      var num2 = parts[i+1];
+      if (!isNaN(num1[num1.length - 1]) && !isNaN(num2[0])) {
+        if (!mixed) {
+          parts[i] += "*";
+        } else {
+          parts[i] += "+";
+        }
+      }
+      expression += parts[i];
+    }
+    expression += parts[parts.length - 1];
+    return expression;
+  }
+
+
+  function mathEqualAlgebra(student, correct) {
+    student = student.replace("**", "^");
+    correct = correct.replace("**", "^");
+    student = math.rationalize(student);
+    student = math.simplify(student).toString();
+    correct = math.rationalize(correct);
+    correct = math.simplify(correct).toString();
+    student = beautify(student);
+    correct = beautify(correct);
+    return (student == correct);
+  }
+
+  function isSimplifiedAlgebra(student, correct) {
+    student = student.replace("**", "^");
+    correct = correct.replace("**", "^");
+    student = student.replace(/\s/g,"");
+    correct = correct.replace(/\s/g,"");
+    if (student.includes(")(") || student.includes(")*(")) {
+       student = math.rationalize(student).toString();
+    }
+    if (student.includes("(")) {
+      student = removeValue(student, "(");
+    }
+    if (student.includes(")")) {
+      student = removeValue(student, ")");
+    }
+    correct = math.rationalize(correct).toString();
+    if (correct.includes("(")) {
+      correct = removeValue(correct, "(");
+    }
+    if (correct.includes(")")) {
+      correct = removeValue(correct, ")");
+    }
+    student = beautify(student);
+    correct = beautify(correct);
+    return (student==correct);
+  }
+
+  function expandedForm(student, correct) {
+    student = student.replace("**", "^");
+    correct = correct.replace("**", "^");
+    student = math.simplify(student).toString();
+    correct = math.simplify(correct).toString();
+    student = beautify(student);
+    correct = beautify(correct);
+    return (student == correct);
+  }
+
+  function mathEqualDomain(student, correct) {
+    if (student.includes("{")) {
+      student = removeValue(student, "{");
+    }
+    if (student.includes("}")) {
+      student = removeValue(student, "}");
+    }
+    if (correct.includes("{")) {
+      correct = removeValue(correct, "{");
+    }
+    if (correct.includes("}")) {
+      correct = removeValue(correct, "}");
+    }
+    student = student.replace(/\s/g,"");
+    correct = correct.replace(/\s/g,"");
+    var studentNumbers = student.split(",");
+    var correctNumbers = student.split(",");
+    studentNumbers.sort();
+    correctNumbers.sort();
+    return arrayEqual(studentNumbers, correctNumbers);
+  }
+
+  
+
+  function algebra(value) {
+    var regExp = /[a-zA-Z]/g;
+                
+    if(regExp.test(value)){
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  function removeValue(variable, character) {
+    var index = variable.indexOf(character);
+    var len = variable.length;
+    variable = variable.substring(0, index) + variable.substring(index + 1, len);
+    return variable;
+  }
+
+  function removeLastInstance(variable, character) {
+    var pos = variable.lastIndexOf(character);
+    variable = variable.substring(0,pos) + variable.substring(pos+1);
+    return variable;
+  }
+
+  function arrayEqual(arr1, arr2) {
+    if (arr1.length != arr2.length) { 
+      return false;
+    }
+    for (var i = 0; i < arr1.length; i++) {
+      if (arr1[i] !== arr2[i]) return false;
+    }
+    return true;
+  }
+
+  function beautify(value) {
+    value = value.replace(/\s/g,"");
+    value = value.replace("*", "");
+    return value;
+  }
+
+  function checker() {
+    var correct = document.getElementById("correctexpression").value;
+    var student = document.getElementById("studentexpression").value;
+    correct = correct.replace("^", "**");
+    student = student.replace("^", "**");
+    if (correct.includes("**")) {
+      correct = brackets(correct);
+    }
+    if (student.includes("**")) {
+      student = brackets(student);
+    }
+    var result1 = true;
+    var result2 = true;
+    var result3 = true;
+    var result4 = true;
+    var result5 = true;
+    var result6 = true;
+    if (checked[0] == true) {
+      if (algebra(student) || algebra(correct)) {
+        result1 = mathEqualAlgebra(student, correct)
+      } else if (student.includes("{") || student.includes(",") || correct.includes("{") || correct.includes(",")) {
+        result1 = mathEqualDomain(student, correct);
+      } else {
+        result1 = mathematicallyEqual(student, correct);
+      }  
+    }
+    if (checked[1] == true) {
+      if (algebra(student) || algebra(correct)) {
+        alert("Sorry, the Integer Form doesn't support algebraic expression");
+        document.getElementById("correctexpression").value = "";
+        document.getElementById("studentexpression").value = "";
+        document.getElementById("result").innerHTML = "";
+        document.getElementById("studentresult").innerHTML = "";
+        document.getElementById("correctresult").innerHTML = "";
+        return;
+      }
+      result2 = integerEqual(student, correct);
+    }
+    if (checked[2] == true) {
+      if (algebra(student) || algebra(correct)) {
+        alert("Sorry, the Fraction Form doesn't support algebraic expression");
+        document.getElementById("correctexpression").value = "";
+        document.getElementById("studentexpression").value = "";
+        document.getElementById("result").innerHTML = "";
+        document.getElementById("studentresult").innerHTML = "";
+        document.getElementById("correctresult").innerHTML = "";
+        return;
+      }
+      result3 = fractionForm(student, correct);
+    }
+    if (checked[3] == true) {
+      if (algebra(student) || algebra(correct)) {
+        result4 = isSimplifiedAlgebra(student, correct);
+      } else {
+        result4 = isSimplified(student, correct);
+      }
+      
+    }
+    if (checked[4] == true) {
+      result5 = expandedForm(student, correct);
+    }
+    if (checked[5] == true) {
+      if (algebra(student) || algebra(correct)) {
+        alert("Sorry, the Mixed Form doesn't support algebraic expression");
+        document.getElementById("correctexpression").value = "";
+        document.getElementById("studentexpression").value = "";
+        document.getElementById("result").innerHTML = "";
+        document.getElementById("studentresult").innerHTML = "";
+        document.getElementById("correctresult").innerHTML = "";
+        return;
+      }
+      result6 = mixedForm(student, correct);
+    }
+    document.getElementById("result").innerHTML = "The expression is <strong>" + (result1 && result2 && result3 && result4 && result5 && result6) + "</strong> based on the paramaters selected";
+  }
+
+  function brackets(exp) {
+    var parts = exp.split("**");
+    var reverse = parts[0].split("");
+    reverse = reverse.reverse();
+    var str = "";
+    var str2 = "";
+    var index = 0;
+    for (var i = 0; i < reverse.length; i++) {
+      if (mathSymbols.includes(reverse[i]) || reverse[i] == " ") {
+        index = i;
+        break;
+      }
+    }
+    reverse.splice(index, 0, "(");
+    reverse = reverse.reverse();
+    for (var x = 0; x < reverse.length; x++) {
+      str += reverse[x];
+    }
+    var part2 = parts[1];
+    part2 = part2.split("");
+    part2 = part2.reverse();
+    var ind = 0;
+    for (var c = 0; c < part2.length; c++) {
+      if (mathSymbols.includes(part2[c]) || part2[c] == " ") {
+        ind = c;
+        break;
+      }
+    }
+    part2.splice(ind, 0, ")");
+    part2 = part2.reverse();
+    for (var z = 0; z < part2.length; z++) {
+      str2 = str2 + part2[z];
+    }
+    return (str + "**" + str2);
+  }
+  function mixer(exp) {
+    exp = exp.replace("_", "\\frac")
+    var nums = exp.split("/");
+    var mix = (nums[0].match(/\d+/g))[0]
+    var num1 = (nums[0].match(/\d+/g))[0];
+    var num2 = (nums[1].match(/\d+/g))[0];
+    //node2.innerHTML = "$$ \(x^2\) + 3\\frac{a}{1-a^2}$$"
+    exp = mix + "\\frac{" + num1 + "}{" + num2 + "}";
+    return exp;
+  }
+
+  function divided(exp) {
+    var nums = exp.split("/");
+    var num1 = (nums[0].match(/\d+/g))[0];
+    var num2 = (nums[1].match(/\d+/g))[0];
+    exp = "\\frac{" + num1 + "}{" + num2 + "}";
+    return exp;
+  }
+
+  function equationDisplay(expression) {
+    var splitter = expression.split(" ");
+    var exp = "$$";
+    for (var i = 0; i < splitter.length; i++) {
+      var expressions = splitter[i]
+      mixed = document.getElementById("mixnum");
+      if (expressions.includes("/")) {
+        expressions = divided(expressions);
+      }
+      exp += expressions;
+    }
+    return (exp + "$$");
+  }
+
+  function display() {
+    var correct = document.getElementById("correctexpression").value;
+    var student = document.getElementById("studentexpression").value;
+    mixed = document.getElementById("mixnum");
+    //student = space(student, mixed.checked);
+    const node = document.getElementById('correctresult');
+    MathJax.typesetClear([node]);
+    //node.innerHTML = "$$\\frac{a}{1-a^2}$$";
+    var expression = equationDisplay(correct);
+    expression.trim();
+    if (correct != "") {
+      node.innerHTML = "Correct Expression: " + expression;
+    }
+    MathJax.typesetPromise().then(() => {
+      MathJax.typesetPromise();
+    }).catch((err) => console.log(err.message));
+    
+    const node2 = document.getElementById('studentresult');
+    MathJax.typesetClear([node2]);
+    var expression2 = equationDisplay(student);
+
+    if (student != "") {
+      node2.innerHTML = "Student Expression: " + expression2;
+    }
+    MathJax.typesetPromise().then(() => {
+      MathJax.typesetPromise();
+    }).catch((err) => console.log(err.message));
+  }
+</script>
+
+
+
+</body>
+</html>
